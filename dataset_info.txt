@@ -1,0 +1,6 @@
+Dataset: Zillow Observed Rent Index (ZORI), ZIP Codes
+Source: https://www.zillow.com/research/data/
+Geographic reference: Census Gazetteer ZCTA coordinates
+Source: https://www.census.gov/geographies/reference-files/time-series/geo/gazetteer-files.html
+Scope: Washington-Arlington-Alexandria metropolitan area, restricted to DC, MD, VA
+Status: Raw files not yet added; document download dates, fields, transformations and coverage after validation.

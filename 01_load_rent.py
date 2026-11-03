@@ -12,7 +12,7 @@ def main():
 
     # Step 2: Load Census geographic data
     census = pd.read_csv("data/2026_Gaz_zcta_national.txt",
-                         sep="\t",
+                         sep="|",
                          dtype={"GEOID": str})
 
     # Step 3: Display Zillow dataset information

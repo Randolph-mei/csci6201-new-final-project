@@ -6,7 +6,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-
+import contextily as ctx
 
 def main():
     # Step 1: Load datasets
@@ -33,7 +33,7 @@ def main():
     plt.hist(dmv[latest_date].dropna(), bins=15,
              edgecolor="black")
     plt.title("DMV Rental Price Distribution (September 2026)")
-    plt.xlabel("Monthly Rent ($)")
+    plt.xlabel("Monthly Zillow Rent Index ($)")
     plt.ylabel("Number of ZIP Codes")
     plt.tight_layout()
     plt.savefig("figures/01_rental_distribution.png")
@@ -61,7 +61,7 @@ def main():
 
     print("Saved Figure 2: Average Rent by State")
 
-    # Figure 3: Geographic rental distribution, map
+    # Figure 3: Geographic rental distribution, map, and use AI to improve
     matched = pd.merge(dmv, census,
                        left_on="RegionName",
                        right_on="GEOID",
@@ -71,23 +71,47 @@ def main():
         subset=["INTPTLAT", "INTPTLONG", latest_date]
     )
 
-    plt.figure(figsize=(9, 7))
-    scatter = plt.scatter(
+    fig, ax = plt.subplots(figsize=(11, 8))
+
+    scatter = ax.scatter(
         matched["INTPTLONG"],
         matched["INTPTLAT"],
         c=matched[latest_date],
         cmap="viridis",
-        s=45,
+        s=55,
         edgecolors="black",
-        linewidths=0.3
+        linewidths=0.4,
+        zorder=2
     )
 
-    plt.colorbar(scatter, label="Monthly Rent ($)")
-    plt.title("DMV Geographic Rental Distribution (September 2026)")
-    plt.xlabel("Longitude")
-    plt.ylabel("Latitude")
+    # Add OpenStreetMap background
+    # And in case of bad network, use try to avoid it
+    try:
+        ctx.add_basemap(
+            ax,
+            crs="EPSG:4326",
+            source=ctx.providers.Esri.WorldTopoMap,
+            zoom=9
+        )
+    except Exception as error:
+        print("Map background could not be loaded:", error)
+
+    plt.colorbar(scatter, ax=ax, label="Monthly Zillow Rent Index ($)")
+    ax.set_title("DMV Geographic Rental Distribution (September 2026)")
+    ax.set_xlabel("Longitude")
+    ax.set_ylabel("Latitude")
+
+    #add more info
+    ax.text(
+        0.01, 0.01,
+        "Rent: Zillow ZORI | Locations: U.S. Census Bureau",
+        transform=ax.transAxes,
+        fontsize=8,
+        bbox={"facecolor": "white", "alpha": 0.8}
+    )
+
     plt.tight_layout()
-    plt.savefig("figures/03_geographic_rent.png")
+    plt.savefig("figures/03_geographic_rent.png", dpi=200)
     plt.close()
 
     print("Saved Figure 3: Geographic Rental Distribution")

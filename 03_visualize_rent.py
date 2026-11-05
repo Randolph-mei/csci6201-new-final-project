@@ -18,6 +18,7 @@ def main():
                          dtype={"GEOID": str})
 
     # Step 2: Select DMV ZIP codes
+    # And I was trying to delete West Virginia
     dmv = zillow[
         (zillow["Metro"] == "Washington-Arlington-Alexandria, DC-VA-MD-WV") &
         (zillow["State"].isin(["DC", "VA", "MD"]))

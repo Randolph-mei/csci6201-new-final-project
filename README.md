@@ -91,7 +91,7 @@ The map allows users to zoom in, explore different areas, and click markers to v
 
 **To stop the server:** Return to the terminal and press `Ctrl + C`.
 
-**Note:** Need Internet
+**Note:** Need Internet to Show the Figure 3 Background Map
 
 ## Project Results
 

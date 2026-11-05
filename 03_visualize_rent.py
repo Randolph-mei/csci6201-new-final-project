@@ -6,7 +6,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-import contextily as ctx
+import folium
 
 def main():
     # Step 1: Load datasets
@@ -17,8 +17,7 @@ def main():
                          sep="|",
                          dtype={"GEOID": str})
 
-    # Step 2: Select DMV ZIP codes
-    # And I was trying to delete West Virginia
+    # Step 2: Select DMV ZIP codes (exclude West Virginia)
     dmv = zillow[
         (zillow["Metro"] == "Washington-Arlington-Alexandria, DC-VA-MD-WV") &
         (zillow["State"].isin(["DC", "VA", "MD"]))
@@ -29,7 +28,7 @@ def main():
     # Step 3: Create figures folder
     os.makedirs("figures", exist_ok=True)
 
-    # Figure 1: Rental price distribution, chart
+    # Figure 1: Rental price distribution
     plt.figure(figsize=(8, 5))
     plt.hist(dmv[latest_date].dropna(), bins=15,
              edgecolor="black")
@@ -42,7 +41,7 @@ def main():
 
     print("Saved Figure 1: Rental Price Distribution")
 
-    # Figure 2: Average rent by state, table
+    # Figure 2: Average rent by state
     states = ["DC", "VA", "MD"]
     average_rents = []
 
@@ -62,61 +61,61 @@ def main():
 
     print("Saved Figure 2: Average Rent by State")
 
-    # Figure 3: Geographic rental distribution, map, and use AI to improve
-    matched = pd.merge(dmv, census,
-                       left_on="RegionName",
-                       right_on="GEOID",
-                       how="left")
+    # Figure 3: Geographic rental distribution
 
-    matched = matched.dropna(
-        subset=["INTPTLAT", "INTPTLONG", latest_date]
+    # Match ZIP codes with Census coordinates
+    census.columns = census.columns.str.strip()
+    dmv = pd.merge(
+        dmv,
+        census,
+        left_on="RegionName",
+        right_on="GEOID"
     )
 
-    fig, ax = plt.subplots(figsize=(11, 8))
-
-    scatter = ax.scatter(
-        matched["INTPTLONG"],
-        matched["INTPTLAT"],
-        c=matched[latest_date],
-        cmap="viridis",
-        s=55,
-        edgecolors="black",
-        linewidths=0.4,
-        zorder=2
+    # Create interactive map
+    dmv_map = folium.Map(
+        location=[38.90, -77.10],
+        zoom_start=10,
+        tiles="OpenStreetMap"
     )
 
-    # Add OpenStreetMap background
-    # And in case of bad network, use try to avoid it
-    try:
-        ctx.add_basemap(
-            ax,
-            crs="EPSG:4326",
-            source=ctx.providers.Esri.WorldTopoMap,
-            zoom=9
+    # Add ZIP code markers
+    for index, row in dmv.iterrows():
+        price = row[latest_date]
+
+        if pd.isna(price):
+            continue
+
+        if price < 2000:
+            color = "green"
+        elif price < 3000:
+            color = "orange"
+        else:
+            color = "red"
+
+        popup_text = (
+            "ZIP Code: " + row["RegionName"] +
+            "<br>State: " + row["State"] +
+            "<br>Monthly Rent: $" + str(round(price, 2))
         )
-    except Exception as error:
-        print("Map background could not be loaded:", error)
 
-    plt.colorbar(scatter, ax=ax, label="Monthly Zillow Rent Index ($)")
-    ax.set_title("DMV Geographic Rental Distribution (September 2026)")
-    ax.set_xlabel("Longitude")
-    ax.set_ylabel("Latitude")
+        folium.CircleMarker(
+            location=[row["INTPTLAT"], row["INTPTLONG"]],
+            # "INTPTLAT" means "Internal Point Latitude"
+            # "INTPTLONG" means "Internal Point Longitude"
+            # They are in the American Census Dataset, and it's just two name
+            radius=6,
+            color=color,
+            fill=True,
+            fill_color=color,
+            fill_opacity=0.7,
+            popup=popup_text
+        ).add_to(dmv_map)
 
-    #add more info
-    ax.text(
-        0.01, 0.01,
-        "Rent: Zillow ZORI | Locations: U.S. Census Bureau",
-        transform=ax.transAxes,
-        fontsize=8,
-        bbox={"facecolor": "white", "alpha": 0.8}
-    )
+    dmv_map.save("figures/03_rental_map.html")
 
-    plt.tight_layout()
-    plt.savefig("figures/03_geographic_rent.png", dpi=200)
-    plt.close()
-
-    print("Saved Figure 3: Geographic Rental Distribution")
-    print("ZIP codes plotted:", len(matched))
+    print("Saved Figure 3: Interactive Rental Map")
+    print("Done!")
 
 
 if __name__ == "__main__":

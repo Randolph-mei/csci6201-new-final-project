@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import os
 import folium
 
+
 def main():
     # Step 1: Load datasets
     zillow = pd.read_csv("data/Zip_zori_uc_sfrcondomfr_sm_month.csv",

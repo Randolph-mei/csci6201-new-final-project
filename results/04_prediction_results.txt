@@ -1,0 +1,8 @@
+DMV Rental Price Prediction
+Model: Linear Regression
+Feature: August 2026 Rent
+Target: September 2026 Rent
+Training samples: 135
+Testing samples: 34
+MAE: 16.52
+R-squared: 0.997

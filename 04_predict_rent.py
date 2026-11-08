@@ -1,4 +1,3 @@
-
 # CSCI 6201 - Fall 2026
 # DMV Rental Market Analysis
 # Step 4: Predict rental prices using Linear Regression

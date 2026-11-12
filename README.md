@@ -68,11 +68,18 @@ Markers are divided into three groups:
 Clicking a marker displays its ZIP Code, state, and estimated monthly rent.
 
 ## How to Run
+(Before running the map, you should run 01,02,03 file first)
 
 **Install the required libraries**
+(if you don't have pip/pandas, please install it)
 
 ```bash
 pip install pandas matplotlib folium
+```
+
+**make sure you are in the right folder(like csci6201-new-final-project/result)**
+```bash
+cd csci6201-new-final-project/result
 ```
 
 **Open the interactive rental map**
